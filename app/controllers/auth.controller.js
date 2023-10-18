@@ -187,7 +187,7 @@ exports.login = async (req, res) => {
         // if (return_data?.profile != null) {
         //   return_data["profile"] = process.env.UPLOAD_URL + return_data?.profile;
         // }
-        res.status(responseCode.OK).send({ ...responseObj.successObject(null, return_data), token: token });
+        res.status(responseCode.OK).send({ ...responseObj.successObject("Login successfully!", return_data), token: token });
       } else {
         throw { status: responseCode.BADREQUEST, message: "Incorrect password!" };
       }
@@ -258,5 +258,50 @@ exports.forgotPassword = async (req, res) => {
       console.log("Error: ", err);
       res.status(responseCode.BADREQUEST).send(responseObj.failObject(null, err));
     }
+  }
+};
+
+exports.resetPassword = (req, res) => {
+  // validate request
+  if (!req.body.password) {
+    res.status(400).send({
+      message: "Content can not be empty!",
+    });
+    return;
+  }
+  var errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).send({ message: errors });
+    return;
+  }
+  try {
+    jwt.verify(Buffer.from(req.body.token, "base64").toString(), process.env.ACCESS_TOKEN_SECRET_KEY, async (err, decoded) => {
+      if (err) {
+        res.status(400).send({ message: "Token is not valid!" });
+      } else {
+        console.log(decoded.id);
+        const user_data = await userControl.findUserById(decoded.id);
+        delete user_data.data[0].password;
+        const update_payload = {
+          ...user_data.data[0],
+          password: req.body.password,
+        };
+        console.log(update_payload.password);
+        user
+          .update({password: bcrypt.hashSync(update_payload.password, 10)}, { where: { id: decoded.id } }) 
+          .then((result) => {
+            if (result == 1) {
+              res.send({ message: "Password has been updated!" });
+            } else {
+              res.send({ message: "Can not update password. Maybe user was not found!" });
+            }
+          })
+          .catch((err) => {
+            res.status(400).send({ message: "Somthing went wrong while updating password!" });
+          });
+      }
+    });
+  } catch (error) {
+    res.status(400).send({ message: "Somthing went wrong!" });
   }
 };

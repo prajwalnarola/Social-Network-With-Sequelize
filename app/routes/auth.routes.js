@@ -15,6 +15,6 @@ Router.get("/verify-password/:token", authController.verifyPassword);
 Router.post("/login", [HelperFunctions.verifyToken, validator.validateLogin], authController.login);
 Router.post("/forgot-password", [validator.validateForgotPassword], authController.forgotPassword);
 // Router.get("/reset-password/:id", authController.sendResetPasswordForm);
-// Router.post("/reset-password/:id", authController.resetPasswordData);
+Router.post("/reset-password", authController.resetPassword);
 
 module.exports = Router;

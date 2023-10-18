@@ -44,6 +44,30 @@ exports.findUser = (data) => {
   });
 };
 
+exports.findUserById = (data) => {
+  return new Promise((resolve, reject) => {
+    user.findAll({ where: { id: data }, attributes: { exclude: ["created_at", "updated_at", "is_testdata", "is_delete"] } }).then((result) => {
+      try {
+        if (result) {
+          resolve({
+            status: 1,
+            message: "data found",
+            data: result,
+          });
+        } else {
+          resolve(0);
+          resolve({ status: 2, message: "No data found" });
+        }
+      } catch (err) {
+        resolve({
+          status: 0,
+          message: "Error occurred while fetching User",
+        });
+      }
+    });
+  });
+};
+
 // APIS
 exports.getUserProfile = async (req, res) => {
   try {

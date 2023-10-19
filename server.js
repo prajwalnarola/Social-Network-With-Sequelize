@@ -1,9 +1,27 @@
+// LIBRARIES INPORT SECTION
+require("dotenv").config();
 const express = require("express");
-
-const app = express();
+const cors = require("cors");
+const fileUpload = require("express-fileupload");
 const bodyParser = require("body-parser");
 
+// CONFIGURE SERVER
+const app = express();
+const corsOptions = {
+  origin: "localhost:3000",
+};
+
 app.use(bodyParser.json());
+
+// CONFIGURATION OF LIBRARIES
+app.use("/upload", express.static(__dirname + "/upload")); // TO ACCESS IMAGE IN BROWSER USING IMAGE URL
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());// (MIDDLEWARE) THAT PARSES THE INCOMING REQUEST BODIES IN A MIDDLEWARE BEFORE YOUR HANDLERS.
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(fileUpload()); // FOR THE FILE UPLOAD
+app.use(cors(corsOptions));// MIDDLEWARE
+
 
 const db = require("./app/config/db.config");
 //Create table if not exists

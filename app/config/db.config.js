@@ -15,4 +15,14 @@ const db = {}
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 db.user = require("../models/user.model")(sequelize, Sequelize);
+db.post = require("../models/posts.model")(sequelize, Sequelize);
+db.userProfile = require("../models/userProfile.model")(sequelize, Sequelize);
+
+// has RELATIONS (HasMany / HasOne)
+db.user.hasMany(db.post, { as: "posts", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.user.hasOne(db.userProfile, { as: "userProfile", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+
+// belongsTO RELATION (BelongsTo / BelongsToMany)(foreign-key)
+db.post.belongsTo(db.user, { as: "user", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+
 module.exports = db

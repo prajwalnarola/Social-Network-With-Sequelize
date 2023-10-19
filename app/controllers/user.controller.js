@@ -188,6 +188,43 @@ exports.getUserProfile = async (req, res) => {
   }
 }
 
+exports.getUserPosts = async (req, res) => {
+  try {
+    // if (!req.body) {
+    //   res.status(responseCode.BADREQUEST).send(responseObj.failObject("Content cannot be empty!"))
+    //   return;
+    // }
+
+    if (!req.decoded) {
+      res.status(responseCode.UNAUTHORIZEDREQUEST).send(responseObj.failObject("You are unauthorized to access this api! Please check the authorization token."));
+      return;
+    }
+
+    var errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject(errors?.errors[0]?.msg));
+      return;
+    }
+
+    const decoded = req?.decoded;
+
+    const posts = await post.findAll({
+      where: { user_id: decoded?.id, is_delete: 0 },
+      attributes: {
+        exclude: ['user_id', 'is_delete', 'is_testdata', 'created_at', 'updated_at'],
+      }
+    })
+
+    if (posts?.length > 0) {
+      res.status(responseCode.OK).send(responseObj.successObject(null, posts))
+    } else {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject("No posts for user!"))
+    }
+  } catch (err) {
+    res.status(responseCode.BADREQUEST).send(responseObj.failObject(err?.message, err))
+  }
+}
+
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -257,6 +294,56 @@ exports.sendVerificationMail = async (options, data) => {
       });
   });
 };
+
+exports.updateUser = async (req, res) => {
+  try {
+    if (!req?.body) {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject("Content is required"))
+      return;
+    }
+
+    if (!req.decoded) {
+      res.status(responseCode.UNAUTHORIZEDREQUEST).send(responseObj.failObject("You are unauthorized to access this api! Please check the authorization token."));
+      return;
+    }
+
+    var errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject(errors?.errors[0]?.msg));
+      return;
+    }
+
+    const decoded = req?.decoded;
+
+    let updated_user = {};
+    let img;
+    if (req.files['profile']) {
+      img = (await uploadFile(req, res))[0]?.name
+    }
+
+    if (img) {
+      updated_user["profile"] = img;
+    }
+
+    if (req.body?.name) {
+      updated_user['user_name'] = req.body?.name
+    }
+
+    if (updated_user) {
+      const data = await user.update(updated_user, { where: { id: decoded?.id, is_delete: 0 } });
+
+      if (data) {
+        res.status(responseCode.OK).send(responseObj.successObject())
+      } else {
+        res.status(responseCode.BADREQUEST).send(responseObj.failObject("Something went wrong updating the user profile!"))
+      }
+    } else {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject("Something went wrong! No data to update."))
+    }
+  } catch (err) {
+    res.status(responseCode.BADREQUEST).send(responseObj.failObject(err?.message, err))
+  }
+}
 
 exports.updateProfile = async (req, res) => {
   try {

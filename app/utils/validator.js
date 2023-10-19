@@ -21,6 +21,10 @@ exports.validateCreatePost = [
   check("description").notEmpty().withMessage("description is required!")
 ];
 
+exports.validateCreateComment = [
+  check("comment").notEmpty().withMessage("comment is required!")
+];
+
 exports.validateChangePassword = [
   check("old_password").notEmpty().withMessage("old_password field is required!"),
   check("new_password").notEmpty().withMessage("new_password field is required!")

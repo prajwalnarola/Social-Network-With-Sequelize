@@ -18,17 +18,22 @@ db.user = require("../models/user.model")(sequelize, Sequelize);
 db.userProfile = require("../models/userProfile.model")(sequelize, Sequelize);
 db.post = require("../models/posts.model")(sequelize, Sequelize);
 db.comment = require("../models/comments.model")(sequelize, Sequelize);
+db.like = require("../models/likes.model")(sequelize, Sequelize);
 
 // has RELATIONS (HasMany / HasOne)
 db.user.hasMany(db.post, { as: "posts", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.user.hasOne(db.userProfile, { as: "userProfile", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.user.hasMany(db.comment, { as: "comments", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.post.hasMany(db.comment, { as: "comments", foreignKey: "post_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.user.hasMany(db.like, { as: "like", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.post.hasMany(db.like, { as: "like", foreignKey: "post_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 
 
 // belongsTO RELATION (BelongsTo / BelongsToMany)(foreign-key)
 db.post.belongsTo(db.user, { as: "user", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.comment.belongsTo(db.user, { as: "user", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.comment.belongsTo(db.post, { as: "post", foreignKey: "post_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.like.belongsTo(db.user, { as: "user", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.like.belongsTo(db.post, { as: "post", foreignKey: "post_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 
 module.exports = db

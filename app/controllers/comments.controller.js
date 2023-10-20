@@ -12,19 +12,23 @@ const uploadFile = require("../utils/uploadFile");
 exports.createComment = async (req, res) => {
   try {
     if (!req.body) {
-      throw { text: "Content cannot be empty!" };
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject("Content cannot be empty!"))
+      return;
     }
 
-    var errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      throw { status: responseCode.BADREQUEST, text: errors?.errors[0]?.msg };
+    if (!req.decoded) {
+      res.status(responseCode.UNAUTHORIZEDREQUEST).send(responseObj.failObject("UNAUTHORIZED"))
+      return;
     }
 
-    if (req?.decoded) {
-      const decoded = req?.decoded;
+    const decoded = req?.decoded;
+    const postData = await post.findAll({ where: { id: req.body?.post_id, user_id: decoded?.id, is_delete: 0 } })
+
+    if (postData?.length > 0) {
+      console.log("post data: ", postData);
 
       let new_comment = {
-        user_id: decoded?.id,
+        user_id: req.body.user_id,
         post_id: req.body.post_id,
         comment: req.body?.comment,
       };
@@ -32,9 +36,11 @@ exports.createComment = async (req, res) => {
       const data = await comment.create(new_comment);
 
       if (data) {
-        res.status(responseCode.OK).send(responseObj.successObject("Success"));
+        const commentCount = await comment.count({where: {post_id: req.body?.post_id, is_delete: 0 }});
+        console.log(commentCount);
+        res.status(responseCode.OK).send(responseObj.successObject("Commented successfuly!", {"commentCount": commentCount}));
       } else {
-        throw { text: "Something went wrong while creating comment" };
+        throw { text: "Something went wrong" };
       }
     }
   } catch (err) {

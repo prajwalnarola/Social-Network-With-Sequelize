@@ -8,7 +8,7 @@ const validator = require("../utils/validator");
 // DEFINED DIFFRENT ROUTES AND AS MIDDLWARE WE PASSED VALIDATIONS
 Router.post("/create", [validator.validateCreatePost], controller.createPost);
 Router.get("/all", [], controller.getAllPosts);
-Router.put('/update', [], controller.updatePost)
-Router.delete('/delete', [], controller.deletePost)
-
+Router.put('/update', [], controller.updatePost);
+Router.delete('/delete', [], controller.deletePost);
+Router.post("/like", [], controller.likePost);
 module.exports = Router;

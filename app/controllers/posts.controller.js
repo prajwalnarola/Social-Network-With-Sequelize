@@ -3,7 +3,7 @@ const { validationResult } = require("express-validator");
 const { Op, Sequelize } = require("sequelize");
 const userControl = require("./user.controller");
 const db = require("../config/db.config");
-const { post, user } = db;
+const { post, user, like } = db;
 
 const responseCode = require("../utils/responseStatus");
 const responseObj = require("../utils/responseObjects");
@@ -174,6 +174,47 @@ exports.deletePost = async (req, res) => {
         res.status(responseCode.OK).send(responseObj.successObject("post deleted successfuly!"))
       } else {
         res.status(responseCode.BADREQUEST).send(responseObj.failObject("Something went wrong deleting the post!"))
+      }
+    } else {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject("No such post"))
+      return;
+    }
+  } catch (err) {
+    console.log("Error: ", err);
+    res.status(responseCode.BADREQUEST).send(responseObj.failObject(null, err))
+  }
+}
+
+exports.likePost = async (req, res) => {
+  try {
+    if (!req.body) {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject("Content cannot be empty!"))
+      return;
+    }
+
+    if (!req.decoded) {
+      res.status(responseCode.UNAUTHORIZEDREQUEST).send(responseObj.failObject("UNAUTHORIZED"))
+      return;
+    }
+
+    const decoded = req?.decoded;
+    const postData = await post.findAll({ where: { id: req.body?.post_id, user_id: decoded?.id, is_delete: 0 } })
+
+    if (postData?.length > 0) {
+      console.log("post data: ", postData);
+
+      let new_like = {
+        post_id: req.body.post_id,
+        user_id: req.body.user_id,
+      };
+
+      const data = await like.create(new_like)
+      if (data) {
+        const likeCount = await like.count({where: {post_id: req.body?.post_id, is_delete: 0 }});
+        console.log(likeCount);
+        res.status(responseCode.OK).send(responseObj.successObject("liked successfuly!", {"likeCount":likeCount}));
+      } else {
+        res.status(responseCode.BADREQUEST).send(responseObj.failObject("Something went wrong!"))
       }
     } else {
       res.status(responseCode.BADREQUEST).send(responseObj.failObject("No such post"))

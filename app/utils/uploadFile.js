@@ -23,6 +23,11 @@ module.exports = async (req, res) => {
               files = [].concat(req.files.profile);
               dir = "./upload/profile";
             }
+            if (req.files["story"]) { 
+              file = req.files["story"];
+              files = [].concat(req.files.story);
+              dir = "./upload/story";
+            }
 
             //files
             async.eachSeries(

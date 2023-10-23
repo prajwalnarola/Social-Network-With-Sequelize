@@ -225,3 +225,36 @@ exports.likePost = async (req, res) => {
     res.status(responseCode.BADREQUEST).send(responseObj.failObject(null, err))
   }
 }
+
+exports.getPostLikes = async (req, res) => {
+  console.log('IM HERE');
+  try {
+    if (!req.query) {
+              res.status(responseCode.BADREQUEST).send(responseObj.failObject("Content cannot be empty"))
+              return;
+            }
+
+    const likesData = await like.findAll({
+      subQuery: false,
+      where: { post_id: req.query?.post_id, is_delete: 0 },
+      attributes: {
+        exclude: ["is_delete", "is_testdata", "created_at", "updated_at"]
+      },
+      include: [
+        {
+          model: user,
+          as: "user",
+          where: { is_delete: 0 },
+          attributes: ['id', 'user_name', 'profile'],
+          required: false,
+        }
+      ],
+      group: ['likes.id']
+    });
+    res.status(responseCode.OK).send(responseObj.successObject("Success", likesData));
+    return;
+  } catch (err) {
+    console.log("Error: ", err);
+    res.status(err?.status ?? responseCode.BADREQUEST).send(responseObj.failObject(err?.msg));
+  }
+};

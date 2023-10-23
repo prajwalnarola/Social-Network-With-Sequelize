@@ -11,4 +11,6 @@ Router.get("/all", [], controller.getAllPosts);
 Router.put('/update', [], controller.updatePost);
 Router.delete('/delete', [], controller.deletePost);
 Router.post("/like", [], controller.likePost);
+Router.get("/all-likes", [], controller.getPostLikes);
+
 module.exports = Router;

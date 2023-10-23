@@ -175,21 +175,21 @@ exports.getStory = async (req, res) => {
 
   exports.createStoryViewers = async (req, res) => {
     try {
-      if (!req.query) {
+      if (!req.body) {
         throw { text: "Content cannot be empty!" };
       }
   
       if (req?.decoded) {
         const decoded = req?.decoded;
         
-      const storyData = await story.findAll({ where: { id: req.query?.story_id, user_id: decoded?.id, is_delete: 0 } })
+      const storyData = await story.findAll({ where: { id: req.body?.story_id, user_id: decoded?.id, is_delete: 0 } })
   
       if (storyData?.length > 0) {
         console.log("story data: ", storyData);
 
         let new_storyViewer = {
-          story_id: req.query.story_id,
-          viewer_user_id: req.query.viewer_user_id,
+          story_id: req.body.story_id,
+          viewer_user_id: req.body.viewer_user_id,
         };
   
         const data = await storyViewers.create(new_storyViewer);
@@ -197,7 +197,7 @@ exports.getStory = async (req, res) => {
         if (data) {
           const storyViewerData = await storyViewers.findAll({
             subQuery: false,
-            where: { story_id: req.query?.story_id, is_delete: 0 },
+            where: { story_id: req.body?.story_id, is_delete: 0 },
             attributes: {
               exclude: ["is_delete", "is_testdata", "created_at", "updated_at"]
             },

@@ -22,7 +22,8 @@ db.like = require("../models/likes.model")(sequelize, Sequelize);
 db.story = require("../models/story.model")(sequelize, Sequelize);
 db.storyLikes = require("../models/storylikes.model")(sequelize, Sequelize);
 db.storyViewers = require("../models/storyViewers.model")(sequelize, Sequelize);
-db.savedPosts = require("../models/savedPosts.model")(sequelize,Sequelize)
+db.savedPosts = require("../models/savedPosts.model")(sequelize,Sequelize);
+db.follow = require("../models/follow.model")(sequelize, Sequelize);
 
 // has RELATIONS (HasMany / HasOne)
 db.user.hasMany(db.post, { as: "posts", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
@@ -38,6 +39,8 @@ db.user.hasMany(db.storyViewers, { as: "storyViewers", foreignKey: "viewer_user_
 db.story.hasMany(db.storyViewers, { as: "storyViewers", foreignKey: "story_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.user.hasMany(db.savedPosts, { as: "savedPosts", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.post.hasMany(db.savedPosts, { as: "savedPosts", foreignKey: "post_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.user.hasMany(db.follow, { as: "followers", foreignKey: "follower_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.user.hasMany(db.follow, { as: "following", foreignKey: "following_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 
 // belongsTO RELATION (BelongsTo / BelongsToMany)(foreign-key)
 db.post.belongsTo(db.user, { as: "user", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
@@ -52,6 +55,8 @@ db.storyViewers.belongsTo(db.user, { as: "user", foreignKey: "viewer_user_id", t
 db.storyViewers.belongsTo(db.story, { as: "story", foreignKey: "story_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.savedPosts.belongsTo(db.user, { as: "user", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.savedPosts.belongsTo(db.post, { as: "post", foreignKey: "post_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.follow.belongsTo(db.user, { as: "follower", foreignKey: "follower_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.follow.belongsTo(db.user, { as: "following", foreignKey: "following_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 
 
 module.exports = db

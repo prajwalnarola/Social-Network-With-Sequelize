@@ -374,3 +374,68 @@ exports.getFollowing = async (req, res) => {
       );
   }
 };
+
+exports.unfollow = async (req, res) => {
+  try {
+    if (!req.body) {
+      throw { text: "Content cannot be empty!" };
+    }
+
+    if (req?.decoded) {
+      const decoded = req?.decoded;
+
+      const unfollowData = await follow.findAll({
+        where: {
+          following_id: req.body.following_id,
+          follower_id: decoded.id,
+          is_delete: 0,
+        },
+      });
+
+      if (unfollowData?.length > 0) {
+        console.log("unfollow data: ", decoded.id);
+        console.log("unfollow data: ", unfollowData);
+
+        const userData = await user.findAll({
+          where: { id: req.body.following_id, is_delete: 0 },
+        });
+
+        if (userData.length > 0) {
+          let new_following = {
+            follower_id: decoded.id,
+            following_id: req.body.following_id,
+          };
+
+          if (req.body.following_id != decoded.id) {
+            const data = await follow.update({ is_delete: 1 },{ where: { follower_id: decoded.id, following_id: req.body.following_id } });
+            if (data) {
+              res
+                .status(responseCode.OK)
+                .send(
+                  responseObj.successObject("Successfully unfollowed")
+                );
+            } else {
+              throw { text: "Something went wrong!" };
+            }
+          } else {
+            throw { text: "same content!" };
+          }
+        } else {
+          throw { text: "user not present!" };
+        }
+      } else {
+        throw { text: "Already present!" };
+      }
+    }
+  } catch (err) {
+    console.log("error: ", err);
+    res
+      .status(err?.status ?? responseCode.BADREQUEST)
+      .send(
+        responseObj.failObject(
+          err?.text ?? null,
+          Object.keys(err).includes("text") ? null : err
+        )
+      );
+  }
+};
